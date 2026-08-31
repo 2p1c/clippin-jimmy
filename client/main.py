@@ -32,7 +32,18 @@ import httpx
 from client.plugins import ENABLED
 
 POLL_INTERVAL = 1.0
+HTTP_ATTEMPTS = 3
+RETRYABLE_STATUS = frozenset({502, 503, 504})
 TYPE_LABEL = {"chat": "chat", "clipboard": "clip"}
+
+
+def _new_client() -> httpx.Client:
+    return httpx.Client(
+        timeout=httpx.Timeout(8.0, connect=5.0),
+        trust_env=False,
+        limits=httpx.Limits(max_keepalive_connections=0, max_connections=8),
+        headers={"Connection": "close"},
+    )
 
 
 class Bus:
@@ -42,7 +53,7 @@ class Bus:
         self.name = name
         self._lock = threading.Lock()
         self._http_lock = threading.Lock()
-        self._client = httpx.Client(timeout=5.0, trust_env=False)
+        self._client = _new_client()
         self._local_clip: str | None = None
         self._last_fetch_error: str | None = None
         self.plugins: list[Any] = []
@@ -56,25 +67,24 @@ class Bus:
             return self._local_clip is not None and text == self._local_clip
 
     def send(self, msg_type: str, text: str) -> bool:
-        url = self._messages_url()
         try:
-            with self._http_lock:
-                response = self._client.post(
-                    url,
-                    json={"sender": self.name, "text": text, "type": msg_type},
-                )
-                response.raise_for_status()
+            self._request(
+                "POST",
+                self._messages_url(),
+                json={"sender": self.name, "text": text, "type": msg_type},
+            )
         except httpx.HTTPError as exc:
             self.log(f"发送失败: {_short_http_error(exc)}")
             return False
         return True
 
     def fetch_after(self, after: int) -> list[dict[str, Any]]:
-        url = self._messages_url()
         try:
-            with self._http_lock:
-                response = self._client.get(url, params={"after": after})
-                response.raise_for_status()
+            response = self._request(
+                "GET",
+                self._messages_url(),
+                params={"after": after},
+            )
         except httpx.HTTPError as exc:
             error = _short_http_error(exc)
             if error != self._last_fetch_error:
@@ -89,6 +99,36 @@ class Bus:
         if not isinstance(messages, list):
             return []
         return messages
+
+    def _request(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
+        last_exc: httpx.HTTPError | None = None
+        for attempt in range(HTTP_ATTEMPTS):
+            try:
+                with self._http_lock:
+                    try:
+                        response = self._client.request(method, url, **kwargs)
+                    except httpx.RequestError:
+                        self._reset_client()
+                        raise
+                    if response.status_code in RETRYABLE_STATUS:
+                        self._reset_client()
+                    response.raise_for_status()
+                    return response
+            except httpx.HTTPError as exc:
+                last_exc = exc
+                if not _is_retryable(exc) or attempt == HTTP_ATTEMPTS - 1:
+                    break
+                time.sleep(0.4 * (attempt + 1))
+        assert last_exc is not None
+        raise last_exc
+
+    def _reset_client(self) -> None:
+        old = self._client
+        self._client = _new_client()
+        try:
+            old.close()
+        except Exception:
+            pass
 
     def log(self, text: str) -> None:
         with self._lock:
@@ -128,6 +168,13 @@ def _poll_loop(bus: Bus) -> None:
         except Exception as exc:
             bus.log(f"拉取异常: {exc}")
             time.sleep(POLL_INTERVAL)
+
+
+def _is_retryable(exc: httpx.HTTPError) -> bool:
+    if isinstance(exc, httpx.RequestError):
+        return True
+    response = getattr(exc, "response", None)
+    return response is not None and response.status_code in RETRYABLE_STATUS
 
 
 def _short_http_error(exc: httpx.HTTPError) -> str:
