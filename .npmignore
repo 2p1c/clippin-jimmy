@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+__pycache__
+**/__pycache__
+*.pyc
+*.egg-info
+.venv
+data
+.git
+.github
+.cursor
+*.tgz

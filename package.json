@@ -1,0 +1,31 @@
+{
+  "name": "clippin-jimmy",
+  "version": "0.1.0",
+  "description": "终端聊天与剪贴板同步",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/2p1c/clippin-jimmy.git"
+  },
+  "license": "MIT",
+  "bin": {
+    "jimmy": "bin/jimmy.js",
+    "clippin-jimmy": "bin/clippin-jimmy.js"
+  },
+  "files": [
+    "app/*.py",
+    "client/*.py",
+    "client/plugins/*.py",
+    "client/plugins/selection_hook/listener.js",
+    "client/plugins/selection_hook/package.json",
+    "client/plugins/selection_hook/package-lock.json",
+    "bin/*.js",
+    "scripts/*.js",
+    "pyproject.toml"
+  ],
+  "scripts": {
+    "postinstall": "node scripts/setup-python.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
