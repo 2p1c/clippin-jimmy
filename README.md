@@ -1,4 +1,4 @@
-# slippin-jimmy
+# clippin-jimmy
 
 两个人用终端聊天，复制或划选文本后会自动发给对方并在对方终端显示。两边都连同一台中继，不需要公网 IP。划词不会弹出浮窗或提示，只是把选中内容写入剪贴板。
 
@@ -10,20 +10,20 @@
 python -m pip install -e .
 ```
 
-装完后，这个 Python 环境里就可以直接运行 `jimmy` / `slippin-jimmy`（或继续用 `python -m client` / `python -m app`）。不要用 A 环境安装、B 环境运行。
+装完后，这个 Python 环境里就可以直接运行 `jimmy` / `clippin-jimmy`（或继续用 `python -m client` / `python -m app`）。不要用 A 环境安装、B 环境运行。
 
 ## 本机试跑
 
 终端 1 起中继：
 
 ```bash
-slippin-jimmy
+clippin-jimmy
 ```
 
 若 8000 端口已被占用：
 
 ```bash
-slippin-jimmy --port 8765
+clippin-jimmy --port 8765
 ```
 
 并把客户端里的 `--cheat` 改成对应端口。
@@ -49,7 +49,7 @@ Linux 若读不到剪贴板，需安装 `xclip` 或 `xsel`。
 1. 把代码拷到阿里云 / 腾讯云轻量等机器。
 2. `python -m pip install -e .`
 3. 云厂商控制台把安全组入站放行 `8000`。
-4. 运行 `slippin-jimmy`
+4. 运行 `clippin-jimmy`
 5. 把 `http://公网IP:8000` 发给对方，两边都执行：
 
 ```bash

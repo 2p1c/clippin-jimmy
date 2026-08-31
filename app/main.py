@@ -16,7 +16,7 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="slippin-jimmy relay", lifespan=lifespan)
+app = FastAPI(title="clippin-jimmy relay", lifespan=lifespan)
 
 
 class MessageIn(BaseModel):
