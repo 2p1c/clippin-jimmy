@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="cover.png" alt="clippin-jimmy" width="720" />
+<img src="cover.png" alt="clippin-jimmy" width="360" />
 
 # clippin-jimmy
 
