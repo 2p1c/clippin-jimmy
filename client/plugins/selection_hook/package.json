@@ -1,0 +1,10 @@
+{
+  "name": "jimmy-selection-hook",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Silent text-selection listener for slippin-jimmy",
+  "main": "listener.js",
+  "dependencies": {
+    "selection-hook": "^2.1.0"
+  }
+}

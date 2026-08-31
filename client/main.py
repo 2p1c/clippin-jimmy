@@ -41,30 +41,49 @@ class Bus:
         self.room = room
         self.name = name
         self._lock = threading.Lock()
+        self._http_lock = threading.Lock()
         self._client = httpx.Client(timeout=5.0, trust_env=False)
+        self._local_clip: str | None = None
+        self._last_fetch_error: str | None = None
         self.plugins: list[Any] = []
+
+    def mark_local_clip(self, text: str) -> None:
+        with self._lock:
+            self._local_clip = text
+
+    def is_local_clip(self, text: str) -> bool:
+        with self._lock:
+            return self._local_clip is not None and text == self._local_clip
 
     def send(self, msg_type: str, text: str) -> bool:
         url = self._messages_url()
         try:
-            response = self._client.post(
-                url,
-                json={"sender": self.name, "text": text, "type": msg_type},
-            )
-            response.raise_for_status()
+            with self._http_lock:
+                response = self._client.post(
+                    url,
+                    json={"sender": self.name, "text": text, "type": msg_type},
+                )
+                response.raise_for_status()
         except httpx.HTTPError as exc:
-            self.log(f"发送失败: {exc}")
+            self.log(f"发送失败: {_short_http_error(exc)}")
             return False
         return True
 
     def fetch_after(self, after: int) -> list[dict[str, Any]]:
         url = self._messages_url()
         try:
-            response = self._client.get(url, params={"after": after})
-            response.raise_for_status()
+            with self._http_lock:
+                response = self._client.get(url, params={"after": after})
+                response.raise_for_status()
         except httpx.HTTPError as exc:
-            self.log(f"拉取失败: {exc}")
+            error = _short_http_error(exc)
+            if error != self._last_fetch_error:
+                self.log(f"拉取失败: {error}")
+                self._last_fetch_error = error
             return []
+        if self._last_fetch_error is not None:
+            self.log("中继已恢复")
+            self._last_fetch_error = None
         payload = response.json()
         messages = payload.get("messages", [])
         if not isinstance(messages, list):
@@ -96,15 +115,26 @@ class Bus:
 def _poll_loop(bus: Bus) -> None:
     after = 0
     while True:
-        messages = bus.fetch_after(after)
-        for msg in messages:
-            after = max(after, int(msg.get("id", after)))
-            if msg.get("sender") == bus.name:
-                continue
-            bus.display(msg)
-            for plugin in bus.plugins:
-                plugin.on_message(msg)
-        time.sleep(POLL_INTERVAL if not messages else 0.05)
+        try:
+            messages = bus.fetch_after(after)
+            for msg in messages:
+                after = max(after, int(msg.get("id", after)))
+                if msg.get("sender") == bus.name:
+                    continue
+                bus.display(msg)
+                for plugin in bus.plugins:
+                    plugin.on_message(msg)
+            time.sleep(POLL_INTERVAL if not messages else 0.05)
+        except Exception as exc:
+            bus.log(f"拉取异常: {exc}")
+            time.sleep(POLL_INTERVAL)
+
+
+def _short_http_error(exc: httpx.HTTPError) -> str:
+    response = getattr(exc, "response", None)
+    if response is not None:
+        return f"{response.status_code} {response.request.url}"
+    return str(exc)
 
 
 def main() -> None:
