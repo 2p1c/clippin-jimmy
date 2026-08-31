@@ -1,6 +1,18 @@
+<div align="center">
+
+<img src="cover.png" alt="clippin-jimmy" width="720" />
+
 # clippin-jimmy
 
-终端聊天与剪贴板同步。需要 Node.js 18+ 和 Python 3.10+。
+终端聊天与剪贴板同步
+
+[![npm](https://img.shields.io/npm/v/clippin-jimmy.svg)](https://www.npmjs.com/package/clippin-jimmy)
+[![license](https://img.shields.io/npm/l/clippin-jimmy.svg)](https://www.npmjs.com/package/clippin-jimmy)
+[![node](https://img.shields.io/node/v/clippin-jimmy.svg)](https://www.npmjs.com/package/clippin-jimmy)
+
+</div>
+
+需要 Node.js 18+ 和 Python 3.10+。
 
 ## 安装
 

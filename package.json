@@ -2,6 +2,14 @@
   "name": "clippin-jimmy",
   "version": "0.1.0",
   "description": "终端聊天与剪贴板同步",
+  "keywords": [
+    "cli",
+    "clipboard",
+    "chat",
+    "terminal",
+    "sync",
+    "relay"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/2p1c/clippin-jimmy.git"
@@ -12,6 +20,7 @@
     "clippin-jimmy": "bin/clippin-jimmy.js"
   },
   "files": [
+    "cover.png",
     "app/*.py",
     "client/*.py",
     "client/plugins/*.py",
