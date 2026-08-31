@@ -24,7 +24,7 @@ jobs:
           HOST: ${{ secrets.DEPLOY_HOST }}
           USER: ${{ secrets.DEPLOY_USER }}
         run: |
-          rsync -az --delete \
+          rsync -rltz --delete --no-owner --no-group \
             --exclude '.git/' \
             --exclude '.venv/' \
             --exclude 'data/' \
@@ -33,4 +33,4 @@ jobs:
             --exclude '*.egg-info/' \
             ./ "${USER}@${HOST}:/root/clippin-jimmy/clippin-jimmy/"
           ssh "${USER}@${HOST}" \
-            "cd /root/clippin-jimmy/clippin-jimmy && .venv/bin/python -m pip install -e . && systemctl restart clippin-jimmy && systemctl is-active clippin-jimmy"
+            "chown -R root:root /root/clippin-jimmy/clippin-jimmy && cd /root/clippin-jimmy/clippin-jimmy && .venv/bin/python -m pip install -e . && systemctl restart clippin-jimmy && systemctl is-active clippin-jimmy"
