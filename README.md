@@ -1,16 +1,14 @@
 # clippin-jimmy
 
+终端聊天与剪贴板同步。需要 Node.js 18+ 和 Python 3.10+。
+
 ## 安装
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/2p1c/clippin-jimmy/main/install.sh | bash
+npm install -g clippin-jimmy
 ```
 
-或：
-
-```bash
-npm install -g github:2p1c/clippin-jimmy
-```
+安装后会自动创建 Python 虚拟环境并安装依赖。
 
 ## 启动
 
