@@ -16,6 +16,12 @@
 
 ## 安装
 
+### GitHub 安装脚本（推荐）
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/2p1c/clippin-jimmy/main/install.sh | bash
+```
+
 ### npm（需要 Node.js 18+）
 
 ```bash
@@ -24,19 +30,9 @@ npm install -g clippin-jimmy
 
 安装后会自动创建 Python 虚拟环境并安装依赖。
 
-npm 11+ 默认会拦截 install 脚本，若安装失败或警告 `allow-scripts`，可先执行：
-
 ```bash
 npm config set allow-scripts=clippin-jimmy --location=user
 npm install -g clippin-jimmy
-```
-
-### GitHub 安装脚本（推荐，无需 Node.js）
-
-仅需 Git 与 Python 3.10+，可绕过 npm 的脚本限制：
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/2p1c/clippin-jimmy/main/install.sh | bash
 ```
 
 脚本会将项目克隆到 `~/.clippin-jimmy`，并在 `~/.local/bin` 创建 `clippin-jimmy` 与 `jimmy` 命令。安装完成后请确认 `~/.local/bin` 在 PATH 中：
